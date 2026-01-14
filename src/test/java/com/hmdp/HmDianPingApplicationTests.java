@@ -4,6 +4,7 @@ import com.hmdp.service.impl.ShopServiceImpl;
 import com.hmdp.utils.RedisIdWorker;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.annotation.Resource;
 import java.util.concurrent.CountDownLatch;
@@ -19,10 +20,8 @@ class HmDianPingApplicationTests {
     @Resource
     private RedisIdWorker redisIdWorker;
 
-    /*@Test
-    void testSaveShop() throws InterruptedException {
-        shopService.saveShop2Redis(1L,10L);
-    }*/
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Test
     void testSaveShop() throws InterruptedException {
@@ -30,6 +29,17 @@ class HmDianPingApplicationTests {
         // 这里的 1L 是指逻辑过期时间为 1秒后（为了让你立刻测出过期效果）
         shopService.saveShop2Redis(1L, 1L);
         System.out.println("数据预热成功！");
+    }
+
+    @Test
+    void testSaveSeckillStock() {
+        // ❗重要：这里的 2 必须改成你 Postman/前端 请求中发送的 voucherId
+        // 如果你请求的是 id=1 的券，就改成 "seckill:stock:1"
+        // 如果你请求的是 id=2 的券，就改成 "seckill:stock:2"
+
+        stringRedisTemplate.opsForValue().set("seckill:stock:13", "200");
+
+        System.out.println("库存预热成功！");
     }
 
     //创建线程池
@@ -55,5 +65,8 @@ class HmDianPingApplicationTests {
         long end = System.currentTimeMillis();
         System.out.println("time = " + (end - begin));
     }
+
+
+
 
 }
