@@ -3,6 +3,7 @@ package com.hmdp.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.dto.LoginFormDTO;
 import com.hmdp.dto.Result;
@@ -16,6 +17,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import java.util.HashMap;
@@ -118,6 +120,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return Result.ok(token);
 
 
+    }
+
+    @Override
+    public Result logout(HttpServletRequest request) {
+        //1.获取请求头中的token
+        //前端通常将token放在名为"authorization"的请求头中
+        String token = request.getHeader("authorization");
+
+        //2.判空
+        if(StrUtil.isBlank(token)){
+            return Result.ok();
+        }
+
+        //3.拼接redis的Key
+        String key = LOGIN_USER_KEY + token;
+
+        //4.从redis中删除该键
+        stringRedisTemplate.delete(key);
+
+        return Result.ok();
     }
 
     private User createUserWithPhone(String phone) {
